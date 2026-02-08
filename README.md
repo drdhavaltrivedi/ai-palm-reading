@@ -84,7 +84,7 @@ Capture your palm, receive detailed AI-powered readings, and chat with AI about 
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/yourusername/ai-palm-reading.git
+git clone https://github.com/drdhavaltrivedi/ai-palm-reading.git
 cd ai-palm-reading
 ```
 
@@ -616,7 +616,7 @@ Need help? Have questions?
 
 - 📧 Email: support@aipalmreading.app
 - 📄 Privacy Policy: [public/privacy.html](public/privacy.html)
-- 🐛 Report Issues: [GitHub Issues](https://github.com/yourusername/ai-palm-reading/issues)
+- 🐛 Report Issues: [GitHub Issues](https://github.com/drdhavaltrivedi/ai-palm-reading/issues)
 
 ---
 
@@ -626,7 +626,7 @@ Need help? Have questions?
 
 ⭐ Star this repo if you find it helpful!
 
-[Report Bug](https://github.com/yourusername/ai-palm-reading/issues) •
-[Request Feature](https://github.com/yourusername/ai-palm-reading/issues)
+[Report Bug](https://github.com/drdhavaltrivedi/ai-palm-reading/issues) •
+[Request Feature](https://github.com/drdhavaltrivedi/ai-palm-reading/issues)
 
 </div>
