@@ -2,9 +2,11 @@ import React from "react";
 import {
   TouchableOpacity,
   Text,
+  StyleSheet,
   type ViewStyle,
   type TextStyle,
 } from "react-native";
+import { useAppTheme } from "../theme/useAppTheme";
 
 interface ButtonProps {
   title: string;
@@ -29,6 +31,26 @@ export function Button({
   accessibilityLabel,
   accessibilityHint,
 }: ButtonProps) {
+  const { colors, isDark } = useAppTheme();
+
+  const containerStyle = [
+    styles.container,
+    variant === "primary" 
+      ? { backgroundColor: colors.accent } 
+      : { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.accent },
+    disabled && { opacity: 0.5, backgroundColor: colors.surfaceElevated },
+    style,
+  ];
+
+  const contentStyle = [
+    styles.text,
+    variant === "primary" 
+      ? { color: isDark ? colors.background : "#1F2937", fontWeight: "700" as const } 
+      : { color: colors.accent },
+    disabled && { color: colors.muted },
+    textStyle,
+  ];
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -38,19 +60,27 @@ export function Button({
       accessibilityLabel={accessibilityLabel ?? title}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled }}
-      className={`rounded-xl px-6 py-3 ${
-        variant === "primary" ? "bg-amber-800" : "border border-amber-700"
-      }`}
-      style={[{ minHeight: 44, justifyContent: "center" }, style]}
+      style={containerStyle}
     >
-      <Text
-        className={`text-base font-medium ${
-          variant === "primary" ? "text-white" : "text-amber-200"
-        }`}
-        style={textStyle}
-      >
+      <Text style={contentStyle}>
         {title}
       </Text>
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    minHeight: 48,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+});

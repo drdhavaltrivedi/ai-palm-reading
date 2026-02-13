@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Ensure root fills viewport on web (fixes black screen) */
+html, body {
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  -webkit-text-size-adjust: 100%;
+}
+/* Expo/RNW root container - must be flex column so inner flex:1 works */
+#root, [data-reactroot], [data-expo-root], body > div:first-of-type {
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}

@@ -10,9 +10,11 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../types/navigation";
 import { PalmReadingChat } from "../services/gemini";
+import { useAppTheme } from "../theme/useAppTheme";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Chat">;
 
@@ -24,6 +26,7 @@ interface Message {
 }
 
 export function ChatScreen({ route, navigation }: Props) {
+  const { colors, isDark } = useAppTheme();
   const { reading, imageUri } = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
@@ -100,21 +103,21 @@ export function ChatScreen({ route, navigation }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <TouchableOpacity
-          style={styles.backButton}
+          style={[styles.backButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Palm Reading Chat</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Oracle Chat</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.muted }]}>
             {reading.handSide} hand • {reading.isDominant ? "Dominant" : "Non-dominant"}
           </Text>
         </View>
@@ -133,49 +136,74 @@ export function ChatScreen({ route, navigation }: Props) {
           <View
             key={message.id}
             style={[
-              styles.messageBubble,
-              message.role === "user" ? styles.userBubble : styles.assistantBubble,
+              styles.messageRow,
+              message.role === "user" ? styles.userRow : styles.assistantRow,
             ]}
           >
-            <Text
+            {message.role === "assistant" && (
+               <View style={[styles.avatarContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                 <Ionicons name="sparkles" size={16} color={colors.accent} />
+               </View>
+            )}
+            
+            <View
               style={[
-                styles.messageText,
-                message.role === "user" ? styles.userText : styles.assistantText,
+                styles.messageBubble,
+                message.role === "user" 
+                  ? [styles.userBubble, { backgroundColor: colors.accent }] 
+                  : [styles.assistantBubble, { backgroundColor: colors.surface, borderColor: colors.border }],
               ]}
             >
-              {message.content}
-            </Text>
-            <Text
-              style={[
-                styles.messageTime,
-                message.role === "user" ? styles.userTime : styles.assistantTime,
-              ]}
-            >
-              {message.timestamp.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
+              <Text
+                style={[
+                  styles.messageText,
+                  message.role === "user" 
+                    ? [styles.userText, { color: isDark ? colors.background : "#1F2937" }] 
+                    : [styles.assistantText, { color: colors.textSecondary }],
+                ]}
+              >
+                {message.content}
+              </Text>
+              <Text
+                style={[
+                  styles.messageTime,
+                  message.role === "user" 
+                    ? [styles.userTime, { color: isDark ? "rgba(5, 4, 10, 0.6)" : "rgba(31, 41, 55, 0.6)" }] 
+                    : [styles.assistantTime, { color: colors.textDim }],
+                ]}
+              >
+                {message.timestamp.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </View>
           </View>
         ))}
 
         {isLoading && (
-          <View style={[styles.messageBubble, styles.assistantBubble]}>
-            <ActivityIndicator size="small" color="#9333ea" />
+          <View style={[styles.messageRow, styles.assistantRow]}>
+             <View style={[styles.avatarContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                 <Ionicons name="sparkles" size={16} color={colors.accent} />
+             </View>
+            <View style={[styles.messageBubble, styles.assistantBubble, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <ActivityIndicator size="small" color={colors.accent} />
+            </View>
           </View>
         )}
 
         {/* Suggested Questions */}
         {messages.length <= 1 && suggestedQuestions.length > 0 && (
-          <View style={styles.suggestionsContainer}>
-            <Text style={styles.suggestionsTitle}>Suggested questions:</Text>
+          <View style={[styles.suggestionsContainer, { borderColor: colors.border }]}>
+            <Text style={[styles.suggestionsTitle, { color: colors.muted }]}>Ask the Oracle:</Text>
             {suggestedQuestions.slice(0, 3).map((suggestion, index) => (
               <TouchableOpacity
                 key={index}
-                style={styles.suggestionChip}
+                style={[styles.suggestionChip, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
                 onPress={() => handleSuggestionPress(suggestion)}
               >
-                <Text style={styles.suggestionText}>{suggestion}</Text>
+                <Ionicons name="chatbubble-ellipses-outline" size={14} color={colors.accent} style={{marginRight: 6}} />
+                <Text style={[styles.suggestionText, { color: colors.textPrimary }]}>{suggestion}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -183,22 +211,26 @@ export function ChatScreen({ route, navigation }: Props) {
       </ScrollView>
 
       {/* Input Area */}
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.background, color: colors.textPrimary, borderColor: colors.border }]}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Ask about your palm reading..."
-          placeholderTextColor="#6b7280"
+          placeholder="Ask about your destiny..."
+          placeholderTextColor={colors.muted}
           multiline
           maxLength={500}
         />
         <TouchableOpacity
-          style={[styles.sendButton, (!inputText.trim() || isLoading) && styles.sendButtonDisabled]}
+          style={[
+            styles.sendButton, 
+            { backgroundColor: colors.accent },
+            (!inputText.trim() || isLoading) && { backgroundColor: colors.surfaceElevated, opacity: 0.5 }
+          ]}
           onPress={handleSend}
           disabled={!inputText.trim() || isLoading}
         >
-          <Text style={styles.sendButtonText}>Send</Text>
+          <Ionicons name="send" size={20} color={isDark ? colors.background : "#1F2937"} />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -208,16 +240,14 @@ export function ChatScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 16,
     paddingTop: 60,
-    backgroundColor: "#1e293b",
+    paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
   },
   backButton: {
     width: 40,
@@ -225,10 +255,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
-  },
-  backButtonText: {
-    fontSize: 28,
-    color: "#fff",
+    borderRadius: 20,
+    borderWidth: 1,
   },
   headerContent: {
     flex: 1,
@@ -236,12 +264,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 13,
-    color: "#94a3b8",
   },
   messagesList: {
     flex: 1,
@@ -250,101 +276,112 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 24,
   },
+  messageRow: {
+    flexDirection: "row",
+    marginBottom: 16,
+    alignItems: "flex-end",
+  },
+  userRow: {
+    justifyContent: "flex-end",
+  },
+  assistantRow: {
+    justifyContent: "flex-start",
+  },
+  avatarContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+    borderWidth: 1,
+  },
   messageBubble: {
     maxWidth: "80%",
     padding: 12,
     borderRadius: 16,
-    marginBottom: 12,
   },
   userBubble: {
-    alignSelf: "flex-end",
-    backgroundColor: "#9333ea",
     borderBottomRightRadius: 4,
   },
   assistantBubble: {
-    alignSelf: "flex-start",
-    backgroundColor: "#1e293b",
     borderBottomLeftRadius: 4,
     borderWidth: 1,
-    borderColor: "#334155",
   },
   messageText: {
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: 4,
   },
   userText: {
-    color: "#fff",
+    fontWeight: "500",
   },
   assistantText: {
-    color: "#e2e8f0",
+    // handled in render
   },
   messageTime: {
     fontSize: 11,
+    alignSelf: "flex-end",
   },
   userTime: {
-    color: "#e9d5ff",
+    // handled in render
   },
   assistantTime: {
-    color: "#64748b",
+    // handled in render
   },
   suggestionsContainer: {
-    marginTop: 16,
+    marginTop: 24,
+    paddingTop: 24,
+    borderTopWidth: 1,
   },
   suggestionsTitle: {
-    fontSize: 13,
-    color: "#94a3b8",
-    marginBottom: 12,
+    fontSize: 14,
+    marginBottom: 16,
     fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   suggestionChip: {
-    backgroundColor: "#1e293b",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    marginBottom: 8,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#334155",
   },
   suggestionText: {
-    color: "#a78bfa",
     fontSize: 14,
+    flex: 1,
   },
   inputContainer: {
     flexDirection: "row",
     padding: 16,
-    backgroundColor: "#1e293b",
     borderTopWidth: 1,
-    borderTopColor: "#334155",
     alignItems: "flex-end",
   },
   input: {
     flex: 1,
-    backgroundColor: "#0f172a",
-    borderRadius: 20,
+    borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    color: "#fff",
-    fontSize: 15,
+    paddingTop: 12,
+    paddingBottom: 12,
+    fontSize: 16,
     maxHeight: 100,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: "#334155",
   },
   sendButton: {
-    backgroundColor: "#9333ea",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: "center",
+    alignItems: "center",
   },
   sendButtonDisabled: {
-    backgroundColor: "#4b5563",
     opacity: 0.5,
   },
   sendButtonText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "600",
+    // Unused
   },
 });

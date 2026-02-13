@@ -9,15 +9,19 @@ import {
   Modal,
   Pressable,
 } from "react-native";
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../types/navigation";
 import type { HandSide } from "../../types/reading";
 import { submitAnalysis } from "../services/api";
+import { useAppTheme } from "../theme/useAppTheme";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Capture">;
 
 export function CaptureScreen({ navigation }: Props) {
+  const { colors, isDark } = useAppTheme();
+  
   const [permission, requestPermission] = useCameraPermissions();
   const [capturing, setCapturing] = useState(false);
   const [showHandSelector, setShowHandSelector] = useState(false);
@@ -34,13 +38,25 @@ export function CaptureScreen({ navigation }: Props) {
     if (!cameraRef.current) return;
 
     try {
+      console.log("Starting capture...");
       setCapturing(true);
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
-        base64: false,
+        base64: true,
       });
 
-      if (photo?.uri) {
+      console.log("Capture result:", photo ? "Success" : "No photo");
+
+      if (photo?.base64) {
+        // Use base64 data URI for better web compatibility
+        // Check if it already has a data prefix (it might be png or other format)
+        const dataUri = photo.base64.startsWith("data:") 
+          ? photo.base64 
+          : "data:image/jpeg;base64," + photo.base64;
+          
+        setCapturedUri(dataUri);
+        setShowHandSelector(true);
+      } else if (photo?.uri) {
         setCapturedUri(photo.uri);
         setShowHandSelector(true);
       }
@@ -83,34 +99,35 @@ export function CaptureScreen({ navigation }: Props) {
 
   if (!permission) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#9333ea" />
-        <Text style={styles.loadingText}>Loading camera...</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textPrimary }]}>Loading camera...</Text>
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.permissionText}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Ionicons name="camera-outline" size={64} color={colors.muted} style={{marginBottom: 24}} />
+        <Text style={[styles.permissionText, { color: colors.textPrimary }]}>
           Camera permission is required to capture your palm
         </Text>
-        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-          <Text style={styles.buttonText}>Grant Permission</Text>
+        <TouchableOpacity style={[styles.permissionButton, { backgroundColor: colors.accent }]} onPress={requestPermission}>
+          <Text style={[styles.buttonText, { color: isDark ? colors.background : "#1F2937" }]}>Grant Permission</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.permissionButton, styles.backButton]}
+          style={[styles.permissionButton, styles.backButton, { backgroundColor: colors.surfaceElevated }]}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.buttonText}>Go Back</Text>
+          <Text style={[styles.buttonText, { color: isDark ? colors.background : "#1F2937" }]}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <CameraView
         ref={cameraRef}
         style={styles.camera}
@@ -128,11 +145,11 @@ export function CaptureScreen({ navigation }: Props) {
 
         {/* Palm Guide Outline */}
         <View style={styles.guideContainer}>
-          <View style={styles.palmGuide}>
-            <View style={styles.guideCorner} />
-            <View style={[styles.guideCorner, styles.topRight]} />
-            <View style={[styles.guideCorner, styles.bottomLeft]} />
-            <View style={[styles.guideCorner, styles.bottomRight]} />
+          <View style={[styles.palmGuide, { borderColor: colors.accent }]}>
+            <View style={[styles.guideCorner, { borderColor: colors.accent }]} />
+            <View style={[styles.guideCorner, styles.topRight, { borderColor: colors.accent }]} />
+            <View style={[styles.guideCorner, styles.bottomLeft, { borderColor: colors.accent }]} />
+            <View style={[styles.guideCorner, styles.bottomRight, { borderColor: colors.accent }]} />
           </View>
         </View>
 
@@ -142,18 +159,18 @@ export function CaptureScreen({ navigation }: Props) {
             style={styles.backBtn}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backBtnText}>✕</Text>
+            <Ionicons name="close" size={28} color={colors.white} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.captureButton}
+            style={[styles.captureButton, { borderColor: colors.accent }]}
             onPress={handleCapture}
             disabled={capturing}
           >
             {capturing ? (
-              <ActivityIndicator size="large" color="#fff" />
+              <ActivityIndicator size="large" color={colors.white} />
             ) : (
-              <View style={styles.captureButtonInner} />
+              <View style={[styles.captureButtonInner, { backgroundColor: colors.white }]} />
             )}
           </TouchableOpacity>
 
@@ -169,60 +186,63 @@ export function CaptureScreen({ navigation }: Props) {
         onRequestClose={() => setShowHandSelector(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Which hand did you capture?</Text>
-            <Text style={styles.modalSubtitle}>
-              Select the hand and whether it's your dominant hand
+          <View style={[styles.modalContent, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Select Captured Hand</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.muted }]}>
+              Confirm details for accurate analysis
             </Text>
 
-            <View style={styles.handOptions}>
-              <Pressable
-                style={styles.handOption}
-                onPress={() => handleAnalyze("left", true)}
-              >
-                <Text style={styles.handEmoji}>🖐️</Text>
-                <Text style={styles.handLabel}>Left Hand</Text>
-                <Text style={styles.handSubLabel}>(Dominant)</Text>
-              </Pressable>
+            <View style={[styles.handOptionsContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+              {/* Left Hand Options */}
+              <View style={styles.handColumn}>
+                <Text style={[styles.columnTitle, { color: colors.muted }]}>Left Hand</Text>
+                <Pressable
+                  style={[styles.handOption, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => handleAnalyze("left", true)}
+                >
+                  <Ionicons name="hand-left" size={24} color={colors.accent} />
+                  <Text style={[styles.handLabel, { color: colors.textPrimary }]}>Dominant</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.handOption, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => handleAnalyze("left", false)}
+                >
+                  <Ionicons name="hand-left-outline" size={24} color={colors.textSecondary} />
+                  <Text style={[styles.handLabel, {color: colors.textSecondary}]}>Non-dom</Text>
+                </Pressable>
+              </View>
 
-              <Pressable
-                style={styles.handOption}
-                onPress={() => handleAnalyze("left", false)}
-              >
-                <Text style={styles.handEmoji}>🖐️</Text>
-                <Text style={styles.handLabel}>Left Hand</Text>
-                <Text style={styles.handSubLabel}>(Non-dominant)</Text>
-              </Pressable>
-            </View>
+              {/* Divider */}
+              <View style={[styles.verticalDivider, { backgroundColor: colors.border }]} />
 
-            <View style={styles.handOptions}>
-              <Pressable
-                style={styles.handOption}
-                onPress={() => handleAnalyze("right", true)}
-              >
-                <Text style={styles.handEmoji}>🤚</Text>
-                <Text style={styles.handLabel}>Right Hand</Text>
-                <Text style={styles.handSubLabel}>(Dominant)</Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.handOption}
-                onPress={() => handleAnalyze("right", false)}
-              >
-                <Text style={styles.handEmoji}>🤚</Text>
-                <Text style={styles.handLabel}>Right Hand</Text>
-                <Text style={styles.handSubLabel}>(Non-dominant)</Text>
-              </Pressable>
+              {/* Right Hand Options */}
+              <View style={styles.handColumn}>
+                <Text style={[styles.columnTitle, { color: colors.muted }]}>Right Hand</Text>
+                <Pressable
+                  style={[styles.handOption, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => handleAnalyze("right", true)}
+                >
+                  <Ionicons name="hand-right" size={24} color={colors.accent} />
+                  <Text style={[styles.handLabel, { color: colors.textPrimary }]}>Dominant</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.handOption, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => handleAnalyze("right", false)}
+                >
+                  <Ionicons name="hand-right-outline" size={24} color={colors.textSecondary} />
+                  <Text style={[styles.handLabel, {color: colors.textSecondary}]}>Non-dom</Text>
+                </Pressable>
+              </View>
             </View>
 
             <Pressable
-              style={styles.cancelButton}
+              style={[styles.cancelButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
               onPress={() => {
                 setShowHandSelector(false);
                 setCapturedUri(null);
               }}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>Cancel</Text>
             </Pressable>
           </View>
         </View>
@@ -234,7 +254,6 @@ export function CaptureScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -245,6 +264,7 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.3)",
+    zIndex: 10,
   },
   header: {
     paddingTop: 60,
@@ -254,12 +274,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
+    color: "#FFFFFF", // White on camera overlay
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: "#d1d5db",
+    color: "#E5E7EB", // Light gray on camera overlay
     textAlign: "center",
   },
   guideContainer: {
@@ -277,7 +297,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 40,
     height: 40,
-    borderColor: "#9333ea",
     borderWidth: 4,
     borderTopWidth: 4,
     borderLeftWidth: 4,
@@ -325,58 +344,49 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-  },
-  backBtnText: {
-    fontSize: 24,
-    color: "#fff",
-    fontWeight: "bold",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
   },
   captureButton: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 4,
-    borderColor: "#9333ea",
   },
   captureButtonInner: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#9333ea",
   },
   placeholder: {
     width: 50,
   },
   loadingText: {
-    color: "#fff",
     marginTop: 16,
     fontSize: 16,
   },
   permissionText: {
-    color: "#fff",
     fontSize: 16,
     textAlign: "center",
     marginBottom: 24,
     paddingHorizontal: 32,
   },
   permissionButton: {
-    backgroundColor: "#9333ea",
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
     marginBottom: 12,
   },
   backButton: {
-    backgroundColor: "#4b5563",
+    // just a helper style for layout overrides
   },
   buttonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -386,61 +396,66 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#1f2937",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 40,
+    borderTopWidth: 1,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
     marginBottom: 8,
     textAlign: "center",
   },
   modalSubtitle: {
     fontSize: 14,
-    color: "#9ca3af",
     marginBottom: 24,
     textAlign: "center",
   },
-  handOptions: {
+  handOptionsContainer: {
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 12,
-  },
-  handOption: {
-    flex: 1,
-    backgroundColor: "#374151",
+    justifyContent: "space-between",
+    marginBottom: 24,
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 12,
+    borderWidth: 1,
+  },
+  handColumn: {
+    flex: 1,
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#4b5563",
   },
-  handEmoji: {
-    fontSize: 40,
-    marginBottom: 8,
-  },
-  handLabel: {
+  columnTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#fff",
-    marginBottom: 4,
+    marginBottom: 12,
+    textTransform: "uppercase",
   },
-  handSubLabel: {
-    fontSize: 12,
-    color: "#9ca3af",
+  verticalDivider: {
+    width: 1,
+    marginHorizontal: 8,
+  },
+  handOption: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "center",
+  },
+  handLabel: {
+    fontSize: 13,
+    fontWeight: "600",
   },
   cancelButton: {
-    backgroundColor: "#4b5563",
     paddingVertical: 16,
     borderRadius: 12,
-    marginTop: 12,
+    borderWidth: 1,
   },
   cancelButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
     textAlign: "center",

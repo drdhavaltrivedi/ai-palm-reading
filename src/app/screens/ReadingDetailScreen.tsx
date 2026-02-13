@@ -1,11 +1,14 @@
 import React from "react";
 import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { HistoryStackParamList } from "../../types/navigation";
+import { useAppTheme } from "../theme/useAppTheme";
 
 type Props = NativeStackScreenProps<HistoryStackParamList, "ReadingDetail">;
 
 export function ReadingDetailScreen({ route, navigation }: Props) {
+  const { colors, isDark } = useAppTheme();
   const { reading } = route.params;
 
   const formatDate = (dateString: string) => {
@@ -26,19 +29,19 @@ export function ReadingDetailScreen({ route, navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header with Back Button */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <TouchableOpacity
-          style={styles.backButton}
+          style={[styles.backButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Palm Reading</Text>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Palm Reading</Text>
         </View>
       </View>
 
@@ -49,59 +52,78 @@ export function ReadingDetailScreen({ route, navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         {/* Palm Image */}
-        <View style={styles.imageContainer}>
+        <View style={[styles.imageContainer, { borderColor: colors.border }]}>
           <Image
             source={{ uri: reading.imageUri }}
-            style={styles.palmImage}
+            style={[styles.palmImage, { backgroundColor: colors.surface }]}
             resizeMode="cover"
           />
         </View>
 
         {/* Reading Info Card */}
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.infoRow}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Hand</Text>
-              <Text style={styles.infoValue}>
+              <Ionicons 
+                name={reading.handSide === "left" ? "hand-left-outline" : "hand-right-outline"} 
+                size={20} 
+                color={colors.accent} 
+                style={{marginBottom: 4}} 
+              />
+              <Text style={[styles.infoLabel, { color: colors.muted }]}>Hand</Text>
+              <Text style={[styles.infoValue, { color: colors.textPrimary }]}>
                 {reading.handSide.charAt(0).toUpperCase() + reading.handSide.slice(1)}
               </Text>
             </View>
-            <View style={styles.infoDivider} />
+            <View style={[styles.infoDivider, { backgroundColor: colors.border }]} />
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Type</Text>
-              <Text style={styles.infoValue}>
+              <Ionicons 
+                name={reading.isDominant ? "star" : "star-outline"} 
+                size={20} 
+                color={colors.accent} 
+                style={{marginBottom: 4}} 
+              />
+              <Text style={[styles.infoLabel, { color: colors.muted }]}>Type</Text>
+              <Text style={[styles.infoValue, { color: colors.textPrimary }]}>
                 {reading.isDominant ? "Dominant" : "Non-Dominant"}
               </Text>
             </View>
           </View>
-          <View style={styles.dateRow}>
-            <Text style={styles.dateText}>
+          <View style={[styles.dateRow, { borderTopColor: colors.border }]}>
+            <Ionicons name="calendar-clear-outline" size={14} color={colors.textDim} style={{marginRight: 6}} />
+            <Text style={[styles.dateText, { color: colors.textDim }]}>
               {formatDate(reading.createdAt)} • {formatTime(reading.createdAt)}
             </Text>
           </View>
         </View>
 
         {/* Reading Sections */}
-        <Text style={styles.sectionsTitle}>Your Palm Reading</Text>
+        <View style={styles.sectionTitleContainer}>
+          <Ionicons name="book-outline" size={20} color={colors.primaryLight} style={{ marginRight: 8 }} />
+          <Text style={[styles.sectionsTitle, { color: colors.textPrimary }]}>Your Palm Insights</Text>
+        </View>
+        
         {reading.sections.map((section, index) => (
-          <View key={section.id} style={styles.section}>
+          <View key={section.id} style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionNumber}>
-                {String(index + 1).padStart(2, "0")}
-              </Text>
-              <Text style={styles.sectionTitle}>{section.title}</Text>
+              <View style={[styles.sectionNumberBox, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+                <Text style={[styles.sectionNumber, { color: colors.accent }]}>
+                  {String(index + 1).padStart(2, "0")}
+                </Text>
+              </View>
+              <Text style={[styles.sectionTitle, { color: colors.accentLight }]}>{section.title}</Text>
             </View>
-            <Text style={styles.sectionContent}>{section.content}</Text>
+            <Text style={[styles.sectionContent, { color: colors.textSecondary }]}>{section.content}</Text>
           </View>
         ))}
 
         {/* Footer Note */}
         <View style={styles.footer}>
-          <Text style={styles.footerIcon}>🔮</Text>
-          <Text style={styles.footerText}>
-            This palm reading was generated by Gemini 3 Pro AI
+          <Ionicons name="sparkles" size={24} color={colors.accent} style={{ marginBottom: 12 }} />
+          <Text style={[styles.footerText, { color: colors.muted }]}>
+            Cosmic insights powered by Gemini 3 Pro AI
           </Text>
-          <Text style={styles.footerSubtext}>
+          <Text style={[styles.footerSubtext, { color: colors.textDim }]}>
             Analyzed on {formatDate(reading.createdAt)}
           </Text>
         </View>
@@ -113,7 +135,6 @@ export function ReadingDetailScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
   },
   header: {
     flexDirection: "row",
@@ -121,9 +142,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: "#0f172a",
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
   },
   backButton: {
     width: 40,
@@ -131,10 +150,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
-  },
-  backButtonText: {
-    fontSize: 28,
-    color: "#fff",
+    borderRadius: 20,
+    borderWidth: 1,
   },
   headerContent: {
     flex: 1,
@@ -142,7 +159,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
   },
   scrollView: {
     flex: 1,
@@ -156,22 +172,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 16,
     overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "#9333ea",
+    borderWidth: 1,
   },
   palmImage: {
     width: "100%",
     height: 300,
-    backgroundColor: "#1e293b",
   },
   infoCard: {
-    backgroundColor: "#1e293b",
     marginHorizontal: 16,
     marginBottom: 24,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#334155",
   },
   infoRow: {
     flexDirection: "row",
@@ -182,73 +194,70 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   infoLabel: {
-    fontSize: 12,
-    color: "#94a3b8",
+    fontSize: 11,
     fontWeight: "600",
-    marginBottom: 6,
+    marginBottom: 4,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   infoValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
-    color: "#fff",
   },
   infoDivider: {
     width: 1,
-    backgroundColor: "#334155",
     marginHorizontal: 16,
   },
   dateRow: {
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "#334155",
   },
   dateText: {
     fontSize: 13,
-    color: "#64748b",
+  },
+  sectionTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   sectionsTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
-    marginHorizontal: 16,
-    marginBottom: 16,
   },
   section: {
-    backgroundColor: "#1e293b",
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#334155",
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
   },
-  sectionNumber: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#9333ea",
-    backgroundColor: "rgba(147, 51, 234, 0.1)",
-    paddingHorizontal: 10,
+  sectionNumberBox: {
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     marginRight: 12,
+    borderWidth: 1,
+  },
+  sectionNumber: {
+    fontSize: 14,
+    fontWeight: "700",
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#a78bfa",
     flex: 1,
   },
   sectionContent: {
     fontSize: 15,
-    color: "#cbd5e1",
     lineHeight: 24,
   },
   footer: {
@@ -257,19 +266,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     paddingVertical: 24,
   },
-  footerIcon: {
-    fontSize: 32,
-    marginBottom: 12,
-  },
   footerText: {
     fontSize: 14,
-    color: "#94a3b8",
     textAlign: "center",
     marginBottom: 4,
   },
   footerSubtext: {
     fontSize: 12,
-    color: "#64748b",
     textAlign: "center",
   },
 });

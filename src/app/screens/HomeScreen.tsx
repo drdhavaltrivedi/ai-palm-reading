@@ -2,88 +2,107 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../types/navigation";
+import { useAppTheme } from "../theme/useAppTheme";
+import { Ionicons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Home">;
 
 export function HomeScreen({ navigation }: Props) {
+  const { colors, isDark } = useAppTheme();
+
   return (
-    <View style={styles.container} accessibilityLabel="Home, start a new palm reading">
+    <View style={[styles.container, { backgroundColor: colors.background }]} accessibilityLabel="Home, start a new palm reading">
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title} accessibilityRole="header">
-            AI Palm Reading
+          <Text style={[styles.title, { color: colors.textPrimary }]} accessibilityRole="header">
+            Cosmic Palmistry
           </Text>
-          <Text style={styles.subtitle}>
-            Discover insights about your life through ancient palmistry powered by modern AI
+          <Text style={[styles.subtitle, { color: colors.textDim }]}>
+            Unlock your destiny with AI-powered ancient wisdom
           </Text>
         </View>
 
         {/* Hero Section */}
-        <View style={styles.heroCard}>
-          <Text style={styles.heroIcon}>🔮</Text>
-          <Text style={styles.heroTitle}>Unlock Your Palm's Secrets</Text>
-          <Text style={styles.heroDescription}>
-            Get a detailed AI-powered analysis of your palm lines, mounts, and fingers
+        <View style={[styles.heroCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderHighlight, shadowColor: colors.primary }]}>
+          <View style={[styles.heroIconContainer, { backgroundColor: isDark ? "rgba(251, 191, 36, 0.1)" : colors.surface, borderColor: colors.accent }]}>
+            <Ionicons name="sparkles" size={48} color={colors.accent} />
+          </View>
+          <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>Discover Your Path</Text>
+          <Text style={[styles.heroDescription, { color: colors.textSecondary }]}>
+            Scan your palm to reveal insights about your life, love, and career through the stars.
           </Text>
-        </View>
-
-        {/* Features */}
-        <View style={styles.featuresContainer}>
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>🤖</Text>
-            <Text style={styles.featureTitle}>AI Analysis</Text>
-            <Text style={styles.featureText}>
-              Powered by Gemini 3 Pro for accurate readings
-            </Text>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>💬</Text>
-            <Text style={styles.featureTitle}>Interactive Chat</Text>
-            <Text style={styles.featureText}>
-              Ask questions about your reading
-            </Text>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>📚</Text>
-            <Text style={styles.featureTitle}>Reading History</Text>
-            <Text style={styles.featureText}>
-              Save and review past analyses
-            </Text>
-          </View>
         </View>
 
         {/* CTA Button */}
         <TouchableOpacity
-          style={styles.ctaButton}
+          style={[styles.ctaButton, { backgroundColor: colors.accent, shadowColor: colors.accent }]}
           onPress={() => navigation.navigate("Capture")}
           accessibilityLabel="Capture palm for reading"
           accessibilityHint="Opens the camera to take a photo of your palm"
           accessibilityRole="button"
         >
-          <Text style={styles.ctaButtonText}>📸 Scan Your Palm</Text>
-          <Text style={styles.ctaButtonSubtext}>Get your reading in seconds</Text>
+          <Ionicons name="camera" size={24} color={isDark ? colors.background : "#1F2937"} style={{ marginRight: 8 }} />
+          <View>
+            <Text style={[styles.ctaButtonText, { color: isDark ? colors.background : "#1F2937" }]}>Begin Reading</Text>
+            <Text style={[styles.ctaButtonSubtext, { color: isDark ? "rgba(5, 4, 10, 0.7)" : "rgba(31, 41, 55, 0.7)" }]}>Instant AI Analysis</Text>
+          </View>
         </TouchableOpacity>
 
+        {/* Features */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Mystical Features</Text>
+        </View>
+        
+        <View style={styles.featuresContainer}>
+          <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="finger-print-outline" size={28} color={colors.primaryLight} style={styles.featureIcon} />
+            <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Deep Analysis</Text>
+            <Text style={[styles.featureText, { color: colors.muted }]}>
+              Lines & Mounts
+            </Text>
+          </View>
+
+          <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="chatbubbles-outline" size={28} color={colors.primaryLight} style={styles.featureIcon} />
+            <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Spirit Chat</Text>
+            <Text style={[styles.featureText, { color: colors.muted }]}>
+              Ask the Oracle
+            </Text>
+          </View>
+
+          <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="journal-outline" size={28} color={colors.primaryLight} style={styles.featureIcon} />
+            <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Soul Journal</Text>
+            <Text style={[styles.featureText, { color: colors.muted }]}>
+              Track Growth
+            </Text>
+          </View>
+        </View>
+
         {/* Info */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>How it works</Text>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.infoTitle, { color: colors.textPrimary }]}>The Journey</Text>
           <View style={styles.infoStep}>
-            <Text style={styles.stepNumber}>1</Text>
-            <Text style={styles.stepText}>Capture a clear photo of your palm</Text>
+            <View style={[styles.stepNumberContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.primary }]}>
+              <Text style={[styles.stepNumber, { color: colors.primaryLight }]}>1</Text>
+            </View>
+            <Text style={[styles.stepText, { color: colors.textSecondary }]}>Capture your palm under good light</Text>
           </View>
           <View style={styles.infoStep}>
-            <Text style={styles.stepNumber}>2</Text>
-            <Text style={styles.stepText}>AI analyzes lines, mounts & fingers</Text>
+             <View style={[styles.stepNumberContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.primary }]}>
+              <Text style={[styles.stepNumber, { color: colors.primaryLight }]}>2</Text>
+            </View>
+            <Text style={[styles.stepText, { color: colors.textSecondary }]}>Let the AI decipher your cosmic lines</Text>
           </View>
           <View style={styles.infoStep}>
-            <Text style={styles.stepNumber}>3</Text>
-            <Text style={styles.stepText}>Get detailed insights & chat with AI</Text>
+             <View style={[styles.stepNumberContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.primary }]}>
+              <Text style={[styles.stepNumber, { color: colors.primaryLight }]}>3</Text>
+            </View>
+            <Text style={[styles.stepText, { color: colors.textSecondary }]}>Receive guidance for your life path</Text>
           </View>
         </View>
       </ScrollView>
@@ -94,140 +113,147 @@ export function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
   },
   scrollContent: {
-    padding: 16,
+    padding: 20,
     paddingTop: 60,
     paddingBottom: 40,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 32,
+    alignItems: "center",
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#fff",
     marginBottom: 8,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 15,
-    color: "#94a3b8",
-    lineHeight: 22,
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+    maxWidth: "80%",
   },
   heroCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 32,
     marginBottom: 24,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#334155",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  heroIcon: {
-    fontSize: 64,
+  heroIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
+    borderWidth: 1,
   },
   heroTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
     marginBottom: 12,
     textAlign: "center",
   },
   heroDescription: {
     fontSize: 15,
-    color: "#cbd5e1",
     textAlign: "center",
     lineHeight: 22,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   featuresContainer: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 32,
   },
   featureCard: {
     flex: 1,
-    backgroundColor: "#1e293b",
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#334155",
   },
   featureIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   featureTitle: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#a78bfa",
-    marginBottom: 6,
+    marginBottom: 4,
     textAlign: "center",
   },
   featureText: {
     fontSize: 11,
-    color: "#94a3b8",
     textAlign: "center",
-    lineHeight: 16,
+    lineHeight: 14,
   },
   ctaButton: {
-    backgroundColor: "#9333ea",
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
-    shadowColor: "#9333ea",
+    justifyContent: "center",
+    marginBottom: 32,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 12,
-    elevation: 8,
+    elevation: 10,
   },
   ctaButtonText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 4,
+    lineHeight: 22,
   },
   ctaButtonSubtext: {
-    fontSize: 13,
-    color: "#e9d5ff",
+    fontSize: 12,
+    fontWeight: "600",
   },
   infoCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 24,
+    padding: 24,
     borderWidth: 1,
-    borderColor: "#334155",
   },
   infoTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#fff",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   infoStep: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  stepNumber: {
+  stepNumberContainer: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "rgba(147, 51, 234, 0.2)",
-    color: "#9333ea",
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
-    lineHeight: 32,
-    marginRight: 12,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  stepNumber: {
+    fontSize: 14,
+    fontWeight: "bold",
   },
   stepText: {
     flex: 1,
     fontSize: 14,
-    color: "#cbd5e1",
     lineHeight: 20,
   },
 });

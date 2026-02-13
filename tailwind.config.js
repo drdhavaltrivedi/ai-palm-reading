@@ -8,12 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Dark-first palette; override in app/theme for design tokens
-        background: "#0a0a0f",
-        surface: "#12121a",
-        muted: "#6b7280",
-        accent: "#8b7355",
-        border: "#27272a",
+        background: "#0c0a09",
+        surface: "#1c1917",
+        muted: "#a8a29e",
+        accent: "#d16d08",
+        "accent-deep": "#b85d06",
+        border: "#292524",
       },
       fontFamily: {
         serif: ["serif"],

@@ -1,51 +1,76 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../types/navigation";
+import { useAppTheme } from "../theme/useAppTheme";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Reading">;
 
 export function ReadingScreen({ route, navigation }: Props) {
+  const { colors, isDark } = useAppTheme();
   const { reading, imageUri } = route.params;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         accessibilityLabel="Your palm reading"
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title} accessibilityRole="header">
+        <Text style={[styles.title, { color: colors.textPrimary }]} accessibilityRole="header">
           Your Palm Reading
         </Text>
 
-        <View style={styles.handInfo}>
-          <Text style={styles.handInfoText}>
-            {reading.handSide === "left" ? "Left" : "Right"} Hand •{" "}
+        {imageUri && (
+          <View style={[styles.imageContainer, { borderColor: colors.border }]}>
+            <Image 
+              source={{ uri: imageUri }} 
+              style={[styles.palmImage, { backgroundColor: colors.surface }]} 
+              resizeMode="cover" 
+            />
+          </View>
+        )}
+
+        <View style={[styles.handInfo, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.infoRow}>
+            <Ionicons name={reading.handSide === "left" ? "hand-left-outline" : "hand-right-outline"} size={16} color={colors.accent} style={{marginRight: 6}} />
+            <Text style={[styles.handInfoText, { color: colors.textPrimary }]}>
+              {reading.handSide === "left" ? "Left" : "Right"} Hand
+            </Text>
+          </View>
+          <Text style={[styles.divider, { color: colors.textDim }]}>•</Text>
+          <Text style={[styles.handInfoText, { color: colors.textPrimary }]}>
             {reading.isDominant ? "Dominant" : "Non-dominant"}
-          </Text>
-          <Text style={styles.dateText}>
-            {new Date(reading.createdAt).toLocaleDateString()}
           </Text>
         </View>
 
-        {reading.sections.map((s) => (
-          <View key={s.id} style={styles.section}>
-            <Text style={styles.sectionTitle}>{s.title}</Text>
-            <Text style={styles.sectionContent}>{s.content}</Text>
+        {reading.sections.map((s, index) => (
+          <View key={s.id} style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.sectionHeader}>
+               <View style={[styles.sectionNumberBox, { backgroundColor: colors.surfaceElevated, borderColor: colors.accent }]}>
+                  <Text style={[styles.sectionNumber, { color: colors.accent }]}>{index + 1}</Text>
+               </View>
+              <Text style={[styles.sectionTitle, { color: colors.accentLight }]}>{s.title}</Text>
+            </View>
+            <Text style={[styles.sectionContent, { color: colors.textSecondary }]}>{s.content}</Text>
           </View>
         ))}
+        
+        {/* Spacer for bottom button */}
+        <View style={{height: 80}} />
       </ScrollView>
 
       {/* Chat Button - Fixed at bottom */}
-      <View style={styles.chatButtonContainer}>
+      <View style={[styles.chatButtonContainer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
         <TouchableOpacity
-          style={styles.chatButton}
+          style={[styles.chatButton, { backgroundColor: colors.accent, shadowColor: colors.accent }]}
           onPress={() => navigation.navigate("Chat", { reading, imageUri })}
           accessibilityLabel="Ask questions about your reading"
         >
-          <Text style={styles.chatButtonIcon}>💬</Text>
-          <Text style={styles.chatButtonText}>Ask Questions About Your Reading</Text>
+          <Ionicons name="chatbubbles" size={24} color={isDark ? colors.background : "#1F2937"} style={{ marginRight: 8 }} />
+          <Text style={[styles.chatButtonText, { color: isDark ? colors.background : "#1F2937" }]}>Ask the Oracle</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -55,90 +80,109 @@ export function ReadingScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 100, // Space for chat button
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 16,
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  imageContainer: {
+    marginBottom: 24,
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    height: 200,
+  },
+  palmImage: {
+    width: "100%",
+    height: "100%",
   },
   handInfo: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#334155",
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   handInfoText: {
     fontSize: 14,
-    color: "#94a3b8",
     fontWeight: "600",
   },
-  dateText: {
-    fontSize: 13,
-    color: "#64748b",
+  divider: {
+    marginHorizontal: 12,
   },
   section: {
-    backgroundColor: "#1e293b",
     borderRadius: 16,
-    padding: 16,
+    padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  sectionNumberBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    borderWidth: 1,
+  },
+  sectionNumber: {
+    fontSize: 12,
+    fontWeight: "bold",
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#a78bfa",
-    marginBottom: 12,
+    flex: 1,
   },
   sectionContent: {
     fontSize: 15,
-    color: "#cbd5e1",
-    lineHeight: 22,
+    lineHeight: 24,
   },
   chatButtonContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
-    backgroundColor: "#0f172a",
+    padding: 20,
+    paddingBottom: 30, // Extra padding for safe area
     borderTopWidth: 1,
-    borderTopColor: "#334155",
   },
   chatButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#9333ea",
     paddingVertical: 16,
-    borderRadius: 12,
-    shadowColor: "#9333ea",
+    borderRadius: 16,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  chatButtonIcon: {
-    fontSize: 20,
-    marginRight: 8,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
   },
   chatButtonText: {
-    color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
 });
-

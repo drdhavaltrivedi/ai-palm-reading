@@ -1,36 +1,48 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text } from "react-native";
 import { HomeStack } from "./HomeStack";
 import { HistoryStack } from "./HistoryStack";
 import { ProfileStack } from "./ProfileStack";
 import type { MainTabParamList } from "../../types/navigation";
+import { useAppTheme } from "../theme/useAppTheme";
+import { Ionicons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function TabLabel({ label, focused }: { label: string; focused: boolean }) {
-  return (
-    <Text className={focused ? "text-accent" : "text-muted"}>
-      {label}
-    </Text>
-  );
-}
-
 export function MainTabs() {
+  const { colors } = useAppTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: "#12121a", borderTopColor: "#27272a" },
-        tabBarActiveTintColor: "#8b7355",
-        tabBarInactiveTintColor: "#6b7280",
+        tabBarStyle: {
+          backgroundColor: colors.tabBarBackground,
+          borderTopColor: colors.tabBarBorder,
+          borderTopWidth: 1,
+          height: 80, // Taller tab bar
+          paddingBottom: 20,
+          paddingTop: 10,
+        },
+        tabBarActiveTintColor: colors.tabActive,
+        tabBarInactiveTintColor: colors.tabInactive,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "600",
+          marginTop: 4,
+        },
       }}
     >
       <Tab.Screen
         name="HomeTab"
         component={HomeStack}
         options={{
-          tabBarLabel: ({ focused }) => <TabLabel label="Home" focused={focused} />,
+          tabBarLabel: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="hand-left-outline" size={24} color={color} />
+          ),
           tabBarAccessibilityLabel: "Home, new reading",
         }}
       />
@@ -38,7 +50,10 @@ export function MainTabs() {
         name="HistoryTab"
         component={HistoryStack}
         options={{
-          tabBarLabel: ({ focused }) => <TabLabel label="History" focused={focused} />,
+          tabBarLabel: "History",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="time-outline" size={24} color={color} />
+          ),
           tabBarAccessibilityLabel: "Reading history",
         }}
       />
@@ -46,10 +61,15 @@ export function MainTabs() {
         name="ProfileTab"
         component={ProfileStack}
         options={{
-          tabBarLabel: ({ focused }) => <TabLabel label="Profile" focused={focused} />,
+          tabBarLabel: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={24} color={color} />
+          ),
           tabBarAccessibilityLabel: "Profile and settings",
         }}
       />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({});

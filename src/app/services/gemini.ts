@@ -13,6 +13,27 @@ if (!GEMINI_API_KEY) {
     console.warn("⚠️ Gemini API key not found. Please add EXPO_PUBLIC_GEMINI_API_KEY to your .env file");
 }
 
+/**
+ * Helper to read image as base64 string
+ * Supports both file paths (native) and data URIs (web/base64)
+ */
+async function readImageAsBase64(uri: string): Promise<string> {
+    if (uri.startsWith("data:")) {
+        // Extract base64 part, handling potential multiple commas in header (though unlikely)
+        // or just standard splitting. Using last part is risky if data has commas, but base64 doesn't.
+        // Safer to split by comma and take the last part IF there's only one header.
+        // Most reliable: substring after the first comma.
+        const commaIndex = uri.indexOf(",");
+        if (commaIndex !== -1) {
+            return uri.substring(commaIndex + 1);
+        }
+        return uri; // invalid data URI? return as is
+    }
+    return await FileSystem.readAsStringAsync(uri, {
+        encoding: "base64",
+    });
+}
+
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 /**
@@ -27,9 +48,7 @@ export async function analyzePalmImage(
         const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
 
         // Read image file and convert to base64
-        const base64Image = await FileSystem.readAsStringAsync(imageUri, {
-            encoding: "base64",
-        });
+        const base64Image = await readImageAsBase64(imageUri);
 
         const palmReadingPrompt = `You are an expert palm reader with years of experience in palmistry and hand analysis. 
     
@@ -84,7 +103,9 @@ Make the reading insightful, positive, and personalized based on what you observ
             {
                 inlineData: {
                     data: base64Image,
-                    mimeType: "image/jpeg",
+                    mimeType: imageUri.startsWith("data:")
+                        ? imageUri.substring(5, imageUri.indexOf(";"))
+                        : "image/jpeg",
                 },
             },
         ]);
@@ -149,9 +170,7 @@ export class PalmReadingChat {
         const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
 
         // Read image file
-        const base64Image = await FileSystem.readAsStringAsync(this.imageUri, {
-            encoding: "base64",
-        });
+        const base64Image = await readImageAsBase64(this.imageUri);
 
         // Create initial context
         const readingSummary = this.reading.sections
@@ -178,7 +197,9 @@ Be friendly, insightful, and provide detailed explanations. If asked about speci
                         {
                             inlineData: {
                                 data: base64Image,
-                                mimeType: "image/jpeg",
+                                mimeType: this.imageUri.startsWith("data:")
+                                    ? this.imageUri.substring(5, this.imageUri.indexOf(";"))
+                                    : "image/jpeg",
                             },
                         },
                     ],
@@ -237,16 +258,17 @@ export async function getQuickPalmInsights(imageUri: string): Promise<string> {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
 
-        const base64Image = await FileSystem.readAsStringAsync(imageUri, {
-            encoding: "base64",
-        });
+
+        const base64Image = await readImageAsBase64(imageUri);
 
         const result = await model.generateContent([
             "Briefly describe what you see in this palm and provide 2-3 quick palmistry insights in a friendly, conversational way. Keep it under 100 words.",
             {
                 inlineData: {
                     data: base64Image,
-                    mimeType: "image/jpeg",
+                    mimeType: imageUri.startsWith("data:")
+                        ? imageUri.substring(5, imageUri.indexOf(";"))
+                        : "image/jpeg",
                 },
             },
         ]);
