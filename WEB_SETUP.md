@@ -16,10 +16,15 @@ npx serve dist -p 5000
 ```
 
 `build:web` runs `scripts/patch-web-index.js` so that:
+- **SEO & GEO** meta tags, Open Graph, Twitter Card, canonical URL, and JSON-LD (WebApplication) are injected for better search ranking.
 - The root/body layout fills the viewport (fixes black screen).
 - A visible "Loading AI Palm Reading…" placeholder shows until React mounts.
 - Any **uncaught JS error** or **unhandled promise rejection** is shown on the page (orange/red error box).
 - After 5 seconds, if still on the loading text, the message suggests opening the console.
+
+### SEO and production URL
+
+Edit the top of `scripts/patch-web-index.js`: set `SITE_URL` to your live URL (e.g. `https://ai-palm-reading.vercel.app`) and adjust `SEO` (title, description, keywords, author, `geoRegion`, `geoPlacename`) if needed. For Vercel you can set env `SITE_URL` in the dashboard and the script will use it.
 
 Use the port printed by `serve` (e.g. http://localhost:37135 if 5000 is in use).
 
