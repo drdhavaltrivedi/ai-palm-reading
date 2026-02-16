@@ -39,7 +39,7 @@ export const lightColors = {
     error: "#EF4444",            // Red 500
     warning: "#d16d08",          // Orange (brand accent)
     info: "#3B82F6",             // Blue 500
-} as const;
+};
 
 // Cosmic Midnight Palette (Dark Mode)
 export const darkColors: Theme = {
